@@ -1,6 +1,6 @@
-# Roomies — Home Finder
+# Home Finder
 
-**Roomies** is a web app for finding roommates and room rentals. Browse property listings (apartments, townhomes, houses), discover roommate profiles that match your lifestyle and budget, list your own room, or create a “Be a Roommater” profile so others can find you. Users can sign up, sign in, save favourites, and manage everything from a single dashboard.
+**Home Finder** is a web app for finding roommates and room rentals. Browse property listings (apartments, townhomes, houses), discover roommate profiles that match your lifestyle and budget, list your own room, or create a “Be a Roommater” profile so others can find you. Users can sign up, sign in, save favourites, and manage everything from a single dashboard.
 
 ---
 
