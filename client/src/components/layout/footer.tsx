@@ -20,17 +20,17 @@ export function Footer() {
           <div>
             <h4 className="font-semibold mb-4 text-foreground">Platform</h4>
             <ul className="space-y-2 text-sm text-muted-foreground">
-              <li><a href="#" className="hover:text-primary transition-colors">Browse Listings</a></li>
-              <li><a href="#" className="hover:text-primary transition-colors">Find Roommates</a></li>
-              <li><a href="#" className="hover:text-primary transition-colors">Post a Room</a></li>
-              <li><a href="#" className="hover:text-primary transition-colors">Safety Trust</a></li>
+              <li><Link href="/listings"><a className="hover:text-primary transition-colors">Browse Listings</a></Link></li>
+              <li><Link href="/roommates"><a className="hover:text-primary transition-colors">Find Roommates</a></Link></li>
+              <li><Link href="/list-a-room"><a className="hover:text-primary transition-colors">Post a Room</a></Link></li>
+              <li><Link href="/how-it-works"><a className="hover:text-primary transition-colors">How It Works</a></Link></li>
             </ul>
           </div>
 
           <div>
             <h4 className="font-semibold mb-4 text-foreground">Company</h4>
             <ul className="space-y-2 text-sm text-muted-foreground">
-              <li><a href="#" className="hover:text-primary transition-colors">About Us</a></li>
+              <li><Link href="/about"><a className="hover:text-primary transition-colors">About Us</a></Link></li>
               <li><a href="#" className="hover:text-primary transition-colors">Careers</a></li>
               <li><a href="#" className="hover:text-primary transition-colors">Blog</a></li>
               <li><a href="#" className="hover:text-primary transition-colors">Contact</a></li>

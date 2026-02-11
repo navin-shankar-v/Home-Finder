@@ -5,49 +5,16 @@ import { Input } from "@/components/ui/input";
 import { Search, MapPin, ArrowRight, Shield, Heart, Home as HomeIcon } from "lucide-react";
 import { ListingCard } from "@/components/listing-card";
 import { Link } from "wouter";
-
-const FEATURED_LISTINGS = [
-  {
-    id: 1,
-    title: "Sunny Loft in Arts District",
-    price: 1200,
-    location: "Downtown, Metro City",
-    type: "Private Room",
-    image: "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?auto=format&fit=crop&q=80&w=800",
-    beds: 1,
-    baths: 1,
-    roommates: 2,
-    isNew: true,
-    tags: ["Furnished", "Pet Friendly"]
-  },
-  {
-    id: 2,
-    title: "Modern Shared House with Garden",
-    price: 950,
-    location: "Greenwood Suburbs",
-    type: "Shared Room",
-    image: "https://images.unsplash.com/photo-1493809842364-78817add7ffb?auto=format&fit=crop&q=80&w=800",
-    beds: 1,
-    baths: 2,
-    roommates: 3,
-    tags: ["Garden", "Parking"]
-  },
-  {
-    id: 3,
-    title: "Luxury Condo with City View",
-    price: 1600,
-    location: "Financial District",
-    type: "Entire Apartment",
-    image: "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&q=80&w=800",
-    beds: 2,
-    baths: 2,
-    roommates: 0,
-    isNew: true,
-    tags: ["Gym", "Pool"]
-  }
-];
+import { useQuery } from "@tanstack/react-query";
+import { getListings } from "@/lib/api";
 
 export default function Home() {
+  const { data } = useQuery({
+    queryKey: ["listings", "featured"],
+    queryFn: () => getListings({}),
+  });
+  const featuredListings = (data?.listings ?? []).slice(0, 3);
+
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <Navbar />
@@ -134,7 +101,7 @@ export default function Home() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {FEATURED_LISTINGS.map(listing => (
+            {featuredListings.map((listing) => (
               <ListingCard key={listing.id} listing={listing} />
             ))}
           </div>
@@ -188,12 +155,16 @@ export default function Home() {
                 Join thousands of happy roommates finding their perfect match every day.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Button size="lg" variant="secondary" className="h-14 px-8 text-lg font-semibold rounded-xl">
-                  Start Searching
-                </Button>
-                <Button size="lg" variant="outline" className="h-14 px-8 text-lg font-semibold rounded-xl bg-transparent border-white text-white hover:bg-white/10 hover:text-white">
-                  Post a Room
-                </Button>
+                <Link href="/listings">
+                  <Button size="lg" variant="secondary" className="h-14 px-8 text-lg font-semibold rounded-xl">
+                    Start Searching
+                  </Button>
+                </Link>
+                <Link href="/list-a-room">
+                  <Button size="lg" variant="outline" className="h-14 px-8 text-lg font-semibold rounded-xl bg-transparent border-white text-white hover:bg-white/10 hover:text-white">
+                    Post a Room
+                  </Button>
+                </Link>
               </div>
             </div>
           </div>
