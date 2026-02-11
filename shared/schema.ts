@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { integer, pgTable, text, varchar } from "drizzle-orm/pg-core";
+import { integer, pgTable, primaryKey, text, varchar } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -71,3 +71,21 @@ export const insertRoommateSchema = createInsertSchema(roommates).omit({
 
 export type InsertRoommate = z.infer<typeof insertRoommateSchema>;
 export type Roommate = typeof roommates.$inferSelect;
+
+export const favouriteListings = pgTable(
+  "favourite_listings",
+  {
+    userId: varchar("user_id", { length: 36 }).notNull(),
+    listingId: varchar("listing_id", { length: 36 }).notNull(),
+  },
+  (t) => [primaryKey({ columns: [t.userId, t.listingId] })]
+);
+
+export const favouriteRoommates = pgTable(
+  "favourite_roommates",
+  {
+    userId: varchar("user_id", { length: 36 }).notNull(),
+    roommateId: varchar("roommate_id", { length: 36 }).notNull(),
+  },
+  (t) => [primaryKey({ columns: [t.userId, t.roommateId] })]
+);

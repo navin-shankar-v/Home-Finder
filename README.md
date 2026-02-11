@@ -76,6 +76,20 @@ npm run check
 | `VITE_CLERK_PUBLISHABLE_KEY` | Clerk publishable key (frontend). Put in `client/.env.local` or root `.env`. |
 | `CLERK_PUBLISHABLE_KEY` | Clerk publishable key (backend). Optional if `VITE_CLERK_PUBLISHABLE_KEY` is set; server will use it. |
 | `CLERK_SECRET_KEY` | Clerk secret key (backend). Required for API auth. |
+| `DATABASE_URL` | PostgreSQL connection string. When set, the server uses the database instead of in-memory storage. |
+| `VITE_SUPABASE_URL` / `VITE_SUPABASE_ANON_KEY` | Supabase project URL and anon key (frontend). |
+
+### Database (Supabase Postgres)
+
+To use **Supabase** as the backend database:
+
+1. In Supabase: **Project Settings → Database** copy the **Connection string** (URI). Use the **Transaction** pooler (port 6543) if available.
+2. Add to your server env (e.g. root `.env` or `client/.env.local` if the server loads it):  
+   `DATABASE_URL=postgresql://postgres.[ref]:[YOUR-PASSWORD]@...`
+3. Create tables: `npm run db:push`
+4. Restart the server. It will use the database for listings, roommates, and favourites.
+
+Without `DATABASE_URL`, the app uses in-memory storage (data is lost on restart).
 
 ---
 
@@ -90,7 +104,8 @@ npm run check
 ├── server/           # Express API
 │   ├── index.ts      # App and Clerk middleware
 │   ├── routes.ts     # Listings, roommates, favourites, me (Clerk auth)
-│   ├── storage.ts    # In-memory storage
+│   ├── storage.ts    # Storage (in-memory or Drizzle when DATABASE_URL set)
+│   ├── storage-drizzle.ts  # PostgreSQL storage implementation
 │   └── seed.ts       # Seed data for listings and roommates
 ├── shared/
 │   └── schema.ts     # Drizzle schema (listings, roommates, etc.)
