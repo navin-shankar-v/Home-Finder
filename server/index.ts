@@ -1,5 +1,20 @@
+import "dotenv/config";
+import { config as dotenvConfig } from "dotenv";
+// Load env files (root and client) so Clerk keys are available
+dotenvConfig({ path: ".env.local" });
+dotenvConfig({ path: "client/.env.local" });
+// Clerk Express requires CLERK_PUBLISHABLE_KEY; use Vite key if that's the only one set
+if (!process.env.CLERK_PUBLISHABLE_KEY && process.env.VITE_CLERK_PUBLISHABLE_KEY) {
+  process.env.CLERK_PUBLISHABLE_KEY = process.env.VITE_CLERK_PUBLISHABLE_KEY;
+}
+if (!process.env.CLERK_PUBLISHABLE_KEY?.startsWith("pk_")) {
+  console.error(
+    "Missing CLERK_PUBLISHABLE_KEY. Add it to .env or .env.local at project root, or to client/.env.local (e.g. VITE_CLERK_PUBLISHABLE_KEY=pk_test_...)."
+  );
+  process.exit(1);
+}
 import express, { type Request, Response, NextFunction } from "express";
-import session from "express-session";
+import { clerkMiddleware } from "@clerk/express";
 import { createServer } from "http";
 import { registerRoutes } from "./routes";
 import { serveStatic } from "./static";
@@ -23,19 +38,7 @@ app.use(
 
 app.use(express.urlencoded({ extended: false }));
 
-app.use(
-  session({
-    secret: process.env.SESSION_SECRET || "roomies-dev-secret",
-    resave: false,
-    saveUninitialized: false,
-    cookie: {
-      secure: process.env.NODE_ENV === "production",
-      httpOnly: true,
-      maxAge: 7 * 24 * 60 * 60 * 1000,
-      sameSite: "lax",
-    },
-  })
-);
+app.use(clerkMiddleware());
 
 export function log(message: string, source = "express") {
   const formattedTime = new Date().toLocaleTimeString("en-US", {

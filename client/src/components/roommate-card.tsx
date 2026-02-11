@@ -18,13 +18,36 @@ export interface RoommateCardData {
   profileImage: string;
 }
 
-function parseLifestyle(prefs: string | undefined): string[] {
-  if (!prefs) return [];
+export interface ParsedLifestyle {
+  tags: string[];
+  foodPreference?: string;
+  smoker?: string;
+  alcohol?: string;
+  gender?: string;
+  overnightGuests?: string;
+  partyHabits?: string;
+  sleepSchedule?: string;
+  workSchedule?: string;
+}
+
+export function parseLifestyle(prefs: string | undefined): ParsedLifestyle {
+  if (!prefs) return { tags: [] };
   try {
     const parsed = JSON.parse(prefs);
-    return Array.isArray(parsed) ? parsed : [];
+    if (Array.isArray(parsed)) return { tags: parsed };
+    return {
+      tags: Array.isArray(parsed.tags) ? parsed.tags : [],
+      foodPreference: parsed.foodPreference,
+      smoker: parsed.smoker,
+      alcohol: parsed.alcohol,
+      gender: parsed.gender,
+      overnightGuests: parsed.overnightGuests,
+      partyHabits: parsed.partyHabits,
+      sleepSchedule: parsed.sleepSchedule,
+      workSchedule: parsed.workSchedule,
+    };
   } catch {
-    return [];
+    return { tags: [] };
   }
 }
 
@@ -37,7 +60,8 @@ export function RoommateCard({
   isFavourite?: boolean;
   onFavouriteToggle?: (e: React.MouseEvent) => void;
 }) {
-  const tags = parseLifestyle(roommate.lifestylePreferences);
+  const lifestyle = parseLifestyle(roommate.lifestylePreferences);
+  const { tags } = lifestyle;
   const budgetLabel =
     roommate.budgetMin === roommate.budgetMax
       ? `$${roommate.budgetMin}`
@@ -103,17 +127,37 @@ export function RoommateCard({
       </div>
 
       <div className="mt-auto px-6 pb-4">
-        {tags.length > 0 && (
-          <div className="flex flex-wrap gap-1 justify-center mb-4">
-            {tags.map((tag) => (
-              <span
-                key={tag}
-                className="text-[10px] font-medium px-2 py-1 rounded-md bg-secondary/10 text-secondary-foreground/80"
-              >
-                {tag}
-              </span>
-            ))}
-          </div>
+        {(tags.length > 0 || lifestyle.foodPreference || lifestyle.smoker || lifestyle.alcohol || lifestyle.gender) && (
+        <div className="flex flex-wrap gap-1 justify-center mb-4">
+          {lifestyle.foodPreference && (
+            <span className="text-[10px] font-medium px-2 py-1 rounded-md bg-primary/10 text-primary">
+              {lifestyle.foodPreference}
+            </span>
+          )}
+          {lifestyle.smoker && (
+            <span className="text-[10px] font-medium px-2 py-1 rounded-md bg-muted text-muted-foreground">
+              {lifestyle.smoker === "No" ? "Non-smoker" : "Smoker"}
+            </span>
+          )}
+          {lifestyle.alcohol && (
+            <span className="text-[10px] font-medium px-2 py-1 rounded-md bg-muted text-muted-foreground">
+              {lifestyle.alcohol === "No" ? "Non-drinker" : "Drinker"}
+            </span>
+          )}
+          {lifestyle.gender && (
+            <span className="text-[10px] font-medium px-2 py-1 rounded-md bg-muted text-muted-foreground">
+              {lifestyle.gender}
+            </span>
+          )}
+          {tags.map((tag) => (
+            <span
+              key={tag}
+              className="text-[10px] font-medium px-2 py-1 rounded-md bg-secondary/10 text-secondary-foreground/80"
+            >
+              {tag}
+            </span>
+          ))}
+        </div>
         )}
       </div>
 

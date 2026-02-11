@@ -12,7 +12,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
-import { useAuth } from "@/contexts/auth-context";
+import { useUser } from "@clerk/clerk-react";
 import { Redirect } from "wouter";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
@@ -38,13 +38,13 @@ const DEFAULT_IMAGE =
   "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?auto=format&fit=crop&q=80&w=800";
 
 export default function ListARoom() {
-  const { user, loading: authLoading } = useAuth();
+  const { user, isLoaded } = useUser();
   const { toast } = useToast();
   const [submitting, setSubmitting] = useState(false);
   const [amenities, setAmenities] = useState<string[]>([]);
   const [propertyType, setPropertyType] = useState<string>("");
 
-  if (!authLoading && !user) {
+  if (isLoaded && !user) {
     return <Redirect to="/auth" />;
   }
 
@@ -113,7 +113,7 @@ export default function ListARoom() {
     );
   }
 
-  if (authLoading) {
+  if (!isLoaded) {
     return (
       <div className="min-h-screen flex flex-col bg-background">
         <Navbar />

@@ -14,25 +14,56 @@ import {
 } from "@/components/ui/select";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getListings, getFavouriteListingIds, addFavouriteListing, removeFavouriteListing, type Listing } from "@/lib/api";
-import { useAuth } from "@/contexts/auth-context";
+import { useUser } from "@clerk/clerk-react";
 import { Search, SlidersHorizontal, Map } from "lucide-react";
-import { useSearch } from "wouter";
-import { useMemo, useState } from "react";
+import { Link, useSearch, useLocation } from "wouter";
+import { useMemo, useState, useEffect } from "react";
 
 export default function Listings() {
-  const { user } = useAuth();
+  const { user } = useUser();
   const queryClient = useQueryClient();
   const searchString = useSearch();
-  const params = useMemo(() => new URLSearchParams(searchString), [searchString]);
+  const [, setLocation] = useLocation();
+  const params = useMemo(() => new URLSearchParams(searchString.startsWith("?") ? searchString.slice(1) : searchString), [searchString]);
   const propertyTypeFromUrl = params.get("propertyType") || undefined;
-  const cityFromUrl = params.get("city") || undefined;
+  const cityFromUrl = params.get("city") ?? "";
+  const priceMinFromUrl = params.get("priceMin");
+  const priceMaxFromUrl = params.get("priceMax");
+  const sortFromUrl = params.get("sort") || "newest";
 
-  const [propertyType, setPropertyType] = useState<string | undefined>(
-    propertyTypeFromUrl
-  );
-  const [city, setCity] = useState(cityFromUrl || "");
-  const [priceRange, setPriceRange] = useState<[number, number]>([500, 2000]);
-  const [sort, setSort] = useState("newest");
+  const [propertyType, setPropertyType] = useState<string | undefined>(propertyTypeFromUrl);
+  const [city, setCity] = useState(cityFromUrl);
+  const [priceRange, setPriceRange] = useState<[number, number]>(() => {
+    const min = priceMinFromUrl ? parseInt(priceMinFromUrl, 10) : 500;
+    const max = priceMaxFromUrl ? parseInt(priceMaxFromUrl, 10) : 2000;
+    if (!isNaN(min) && !isNaN(max) && min <= max) return [min, max];
+    return [500, 2000];
+  });
+  const [sort, setSort] = useState(sortFromUrl);
+
+  // Sync URL when filters change (shareable, back/forward)
+  useEffect(() => {
+    const next = new URLSearchParams();
+    if (city) next.set("city", city);
+    if (propertyType) next.set("propertyType", propertyType);
+    if (priceRange[0] !== 500 || priceRange[1] !== 2000) {
+      next.set("priceMin", String(priceRange[0]));
+      next.set("priceMax", String(priceRange[1]));
+    }
+    if (sort !== "newest") next.set("sort", sort);
+    const q = next.toString();
+    setLocation(`/listings${q ? `?${q}` : ""}`, { replace: true });
+  }, [city, propertyType, priceRange, sort, setLocation]);
+
+  // Initialize from URL when navigating (e.g. back button or shared link)
+  useEffect(() => {
+    setPropertyType(propertyTypeFromUrl || undefined);
+    setCity(cityFromUrl);
+    const min = priceMinFromUrl ? parseInt(priceMinFromUrl, 10) : 500;
+    const max = priceMaxFromUrl ? parseInt(priceMaxFromUrl, 10) : 2000;
+    if (!isNaN(min) && !isNaN(max) && min <= max) setPriceRange([min, max]);
+    if (sortFromUrl) setSort(sortFromUrl);
+  }, [propertyTypeFromUrl, cityFromUrl, priceMinFromUrl, priceMaxFromUrl, sortFromUrl]);
 
   const { data, isLoading, error } = useQuery({
     queryKey: ["listings", propertyType, city || undefined],
@@ -191,16 +222,23 @@ export default function Listings() {
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {filtered.map((listing) => (
-                  <ListingCard
-                    key={listing.id}
-                    listing={listing}
-                    isFavourite={user ? favouriteListingIds.has(listing.id) : undefined}
-                    onFavouriteToggle={
-                      user
-                        ? () => handleFavouriteToggle(listing.id, favouriteListingIds.has(listing.id))
-                        : undefined
-                    }
-                  />
+                  <Link key={listing.id} href={`/listings/${listing.id}`}>
+                    <a className="block h-full focus:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-xl">
+                      <ListingCard
+                        listing={listing}
+                        isFavourite={user ? favouriteListingIds.has(listing.id) : undefined}
+                        onFavouriteToggle={
+                          user
+                            ? (e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                handleFavouriteToggle(listing.id, favouriteListingIds.has(listing.id));
+                              }
+                            : undefined
+                        }
+                      />
+                    </a>
+                  </Link>
                 ))}
               </div>
             )}

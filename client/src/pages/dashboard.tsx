@@ -4,7 +4,7 @@ import { ListingCard } from "@/components/listing-card";
 import { RoommateCard } from "@/components/roommate-card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useAuth } from "@/contexts/auth-context";
+import { useUser } from "@clerk/clerk-react";
 import { Redirect, Link } from "wouter";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
@@ -23,7 +23,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Trash2, Heart, Home, User, HeartOff } from "lucide-react";
 
 export default function Dashboard() {
-  const { user, loading: authLoading } = useAuth();
+  const { user, isLoaded } = useUser();
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -83,7 +83,7 @@ export default function Dashboard() {
     onError: (e: Error) => toast({ title: "Error", description: e.message, variant: "destructive" }),
   });
 
-  if (!authLoading && !user) {
+  if (isLoaded && !user) {
     return <Redirect to="/auth" />;
   }
 

@@ -4,7 +4,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { useAuth } from "@/contexts/auth-context";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { useUser } from "@clerk/clerk-react";
 import { Redirect } from "wouter";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
@@ -32,16 +39,33 @@ const LIFESTYLE_OPTIONS = [
   "Gardening",
 ];
 
+const OVERNIGHT_GUESTS_OPTIONS = ["Rarely", "Sometimes", "Often"];
+const PARTY_HABITS_OPTIONS = ["Quiet", "Sometimes", "Social"];
+const SLEEP_SCHEDULE_OPTIONS = ["Early Bird", "Night Owl", "Flexible"];
+const FOOD_PREFERENCE_OPTIONS = ["No preference", "Vegetarian", "Vegan", "Omnivore", "Pescatarian"];
+const SMOKER_OPTIONS = ["Yes", "No"];
+const WORK_SCHEDULE_OPTIONS = ["9–5", "Shift work", "Remote", "Student", "Flexible"];
+const GENDER_OPTIONS = ["Male", "Female", "Other", "Prefer not to say"];
+const ALCOHOL_OPTIONS = ["Yes", "No"];
+
 const DEFAULT_IMAGE =
   "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=400";
 
 export default function BeARoommater() {
-  const { user, loading: authLoading } = useAuth();
+  const { user, isLoaded } = useUser();
   const { toast } = useToast();
   const [submitting, setSubmitting] = useState(false);
   const [lifestyle, setLifestyle] = useState<string[]>([]);
+  const [overnightGuests, setOvernightGuests] = useState("");
+  const [partyHabits, setPartyHabits] = useState("");
+  const [sleepSchedule, setSleepSchedule] = useState("");
+  const [foodPreference, setFoodPreference] = useState("");
+  const [smoker, setSmoker] = useState("");
+  const [workSchedule, setWorkSchedule] = useState("");
+  const [gender, setGender] = useState("");
+  const [alcohol, setAlcohol] = useState("");
 
-  if (!authLoading && !user) {
+  if (isLoaded && !user) {
     return <Redirect to="/auth" />;
   }
 
@@ -92,6 +116,28 @@ export default function BeARoommater() {
 
     setSubmitting(true);
     try {
+      const lifestylePayload =
+        lifestyle.length > 0 ||
+        overnightGuests ||
+        partyHabits ||
+        sleepSchedule ||
+        foodPreference ||
+        smoker ||
+        workSchedule ||
+        gender ||
+        alcohol
+          ? {
+              tags: lifestyle,
+              ...(overnightGuests && { overnightGuests }),
+              ...(partyHabits && { partyHabits }),
+              ...(sleepSchedule && { sleepSchedule }),
+              ...(foodPreference && { foodPreference }),
+              ...(smoker && { smoker }),
+              ...(workSchedule && { workSchedule }),
+              ...(gender && { gender }),
+              ...(alcohol && { alcohol }),
+            }
+          : [];
       await createRoommateProfile({
         name,
         age: Number(age),
@@ -100,7 +146,7 @@ export default function BeARoommater() {
         budgetMin: min,
         budgetMax: max,
         moveInDate,
-        lifestylePreferences: lifestyle,
+        lifestylePreferences: lifestylePayload,
         bio,
         profileImage: profileImage || DEFAULT_IMAGE,
       });
@@ -110,6 +156,14 @@ export default function BeARoommater() {
       });
       form.reset();
       setLifestyle([]);
+      setOvernightGuests("");
+      setPartyHabits("");
+      setSleepSchedule("");
+      setFoodPreference("");
+      setSmoker("");
+      setWorkSchedule("");
+      setGender("");
+      setAlcohol("");
     } catch (err: any) {
       toast({
         title: "Error",
@@ -127,7 +181,7 @@ export default function BeARoommater() {
     );
   }
 
-  if (authLoading) {
+  if (!isLoaded) {
     return (
       <div className="min-h-screen flex flex-col bg-background">
         <Navbar />
@@ -160,7 +214,7 @@ export default function BeARoommater() {
                 name="name"
                 placeholder="Your display name"
                 required
-                defaultValue={user?.name}
+                defaultValue={user?.fullName ?? [user?.firstName, user?.lastName].filter(Boolean).join(" ") ?? ""}
               />
             </div>
             <div className="space-y-4">
@@ -247,6 +301,97 @@ export default function BeARoommater() {
                   </label>
                 </div>
               ))}
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-2">
+              <Label>Overnight guests</Label>
+              <Select value={overnightGuests} onValueChange={setOvernightGuests}>
+                <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
+                <SelectContent>
+                  {OVERNIGHT_GUESTS_OPTIONS.map((o) => (
+                    <SelectItem key={o} value={o}>{o}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>Party habits</Label>
+              <Select value={partyHabits} onValueChange={setPartyHabits}>
+                <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
+                <SelectContent>
+                  {PARTY_HABITS_OPTIONS.map((o) => (
+                    <SelectItem key={o} value={o}>{o}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>I get up / go to bed</Label>
+              <Select value={sleepSchedule} onValueChange={setSleepSchedule}>
+                <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
+                <SelectContent>
+                  {SLEEP_SCHEDULE_OPTIONS.map((o) => (
+                    <SelectItem key={o} value={o}>{o}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>Food preference</Label>
+              <Select value={foodPreference} onValueChange={setFoodPreference}>
+                <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
+                <SelectContent>
+                  {FOOD_PREFERENCE_OPTIONS.map((o) => (
+                    <SelectItem key={o} value={o}>{o}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>Smoker</Label>
+              <Select value={smoker} onValueChange={setSmoker}>
+                <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
+                <SelectContent>
+                  {SMOKER_OPTIONS.map((o) => (
+                    <SelectItem key={o} value={o}>{o}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>Work schedule</Label>
+              <Select value={workSchedule} onValueChange={setWorkSchedule}>
+                <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
+                <SelectContent>
+                  {WORK_SCHEDULE_OPTIONS.map((o) => (
+                    <SelectItem key={o} value={o}>{o}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>Gender</Label>
+              <Select value={gender} onValueChange={setGender}>
+                <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
+                <SelectContent>
+                  {GENDER_OPTIONS.map((o) => (
+                    <SelectItem key={o} value={o}>{o}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>Alcohol</Label>
+              <Select value={alcohol} onValueChange={setAlcohol}>
+                <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
+                <SelectContent>
+                  {ALCOHOL_OPTIONS.map((o) => (
+                    <SelectItem key={o} value={o}>{o}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           </div>
 

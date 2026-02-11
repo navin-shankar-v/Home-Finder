@@ -6,11 +6,8 @@ import type {
   Roommate,
   User,
 } from "@shared/schema";
-import bcrypt from "bcrypt";
 import { randomUUID } from "crypto";
 import { createSeedListings, createSeedRoommates } from "./seed";
-
-const SALT_ROUNDS = 10;
 
 export interface IStorage {
   getUser(id: string): Promise<User | undefined>;
@@ -22,7 +19,15 @@ export interface IStorage {
   getListingById(id: string): Promise<Listing | undefined>;
   createListing(data: InsertListing): Promise<Listing>;
   deleteListing(id: string, userId: string): Promise<boolean>;
-  getRoommates(filters?: { city?: string }): Promise<Roommate[]>;
+  getRoommates(filters?: {
+    city?: string;
+    ageMin?: number;
+    ageMax?: number;
+    foodPreference?: string;
+    smoker?: string;
+    alcohol?: string;
+    gender?: string;
+  }): Promise<Roommate[]>;
   getRoommateById(id: string): Promise<Roommate | undefined>;
   getRoommateByUserId(userId: string): Promise<Roommate | undefined>;
   createRoommate(data: Omit<Roommate, "id">): Promise<Roommate>;
@@ -95,12 +100,11 @@ export class MemStorage implements IStorage {
       throw new Error("EMAIL_IN_USE");
     }
     const id = randomUUID();
-    const hashedPassword = await bcrypt.hash(insertUser.password, SALT_ROUNDS);
     const user: User = {
       id,
       name: insertUser.name,
       email: insertUser.email,
-      password: hashedPassword,
+      password: insertUser.password,
       emailVerified: insertUser.emailVerified ?? "false",
       verificationToken: insertUser.verificationToken ?? null,
     } as User;
@@ -145,11 +149,68 @@ export class MemStorage implements IStorage {
     return listing;
   }
 
-  async getRoommates(filters?: { city?: string }): Promise<Roommate[]> {
+  private parseLifestylePrefs(lifestylePreferences: string): { foodPreference?: string; smoker?: string; alcohol?: string; gender?: string } {
+    try {
+      const parsed = JSON.parse(lifestylePreferences);
+      if (Array.isArray(parsed)) return {};
+      return {
+        foodPreference: parsed.foodPreference,
+        smoker: parsed.smoker,
+        alcohol: parsed.alcohol,
+        gender: parsed.gender,
+      };
+    } catch {
+      return {};
+    }
+  }
+
+  async getRoommates(filters?: {
+    city?: string;
+    ageMin?: number;
+    ageMax?: number;
+    foodPreference?: string;
+    smoker?: string;
+    alcohol?: string;
+    gender?: string;
+  }): Promise<Roommate[]> {
     let list = Array.from(this.roommates.values());
     if (filters?.city) {
       const q = filters.city.toLowerCase().trim();
       list = list.filter((r) => r.city.toLowerCase().includes(q));
+    }
+    if (filters?.ageMin != null) {
+      list = list.filter((r) => r.age >= filters!.ageMin!);
+    }
+    if (filters?.ageMax != null) {
+      list = list.filter((r) => r.age <= filters!.ageMax!);
+    }
+    if (filters?.foodPreference) {
+      const q = filters.foodPreference.toLowerCase();
+      list = list.filter((r) => {
+        const prefs = this.parseLifestylePrefs(r.lifestylePreferences);
+        return prefs.foodPreference?.toLowerCase() === q;
+      });
+    }
+    if (filters?.smoker) {
+      const q = filters.smoker.toLowerCase();
+      list = list.filter((r) => {
+        const prefs = this.parseLifestylePrefs(r.lifestylePreferences);
+        return prefs.smoker?.toLowerCase() === q;
+      });
+    }
+    if (filters?.alcohol) {
+      const q = filters.alcohol.toLowerCase();
+      list = list.filter((r) => {
+        const prefs = this.parseLifestylePrefs(r.lifestylePreferences);
+        return prefs.alcohol?.toLowerCase() === q;
+      });
+    }
+    if (filters?.gender) {
+      const q = filters.gender.toLowerCase();
+      list = list.filter((r) => {
+        const prefs = this.parseLifestylePrefs(r.lifestylePreferences);
+        return prefs.gender?.toLowerCase() === q;
+      });
     }
     return list;
   }

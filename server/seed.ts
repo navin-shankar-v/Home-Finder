@@ -93,6 +93,14 @@ const LIFESTYLE_TAGS = [
   "Studious", "Quiet", "Social", "Foodie", "Traveler", "Outdoorsy", "Music Lover",
   "Clean", "Minimalist", "Fitness", "Reader", "Cooking", "Gardening",
 ];
+const FOOD_PREFS = ["No preference", "Vegetarian", "Vegan", "Omnivore", "Pescatarian"];
+const SMOKER_VALS = ["Yes", "No"];
+const ALCOHOL_VALS = ["Yes", "No"];
+const GENDERS = ["Male", "Female", "Other", "Prefer not to say"];
+const OVERNIGHT_GUESTS = ["Rarely", "Sometimes", "Often"];
+const PARTY_HABITS = ["Quiet", "Sometimes", "Social"];
+const SLEEP_SCHEDULES = ["Early Bird", "Night Owl", "Flexible"];
+const WORK_SCHEDULES = ["9–5", "Shift work", "Remote", "Student", "Flexible"];
 
 const BIOS = [
   "Looking for a clean, respectful living situation. I work from home sometimes and value quiet evenings.",
@@ -173,6 +181,17 @@ export function createSeedRoommates(): (Omit<Roommate, "id"> & { id: string })[]
     const budgetMax = budgetMin + Math.floor(Math.random() * 600) + 200;
     const moveIn = new Date();
     moveIn.setDate(moveIn.getDate() + Math.floor(Math.random() * 90));
+    const lifestyleObj = {
+      tags: pickMany(LIFESTYLE_TAGS, 4),
+      foodPreference: pick(FOOD_PREFS),
+      smoker: pick(SMOKER_VALS),
+      alcohol: pick(ALCOHOL_VALS),
+      gender: pick(GENDERS),
+      overnightGuests: pick(OVERNIGHT_GUESTS),
+      partyHabits: pick(PARTY_HABITS),
+      sleepSchedule: pick(SLEEP_SCHEDULES),
+      workSchedule: pick(WORK_SCHEDULES),
+    };
     roommates.push({
       id: randomUUID(),
       userId: null,
@@ -183,7 +202,7 @@ export function createSeedRoommates(): (Omit<Roommate, "id"> & { id: string })[]
       budgetMin,
       budgetMax,
       moveInDate: moveIn.toISOString().split("T")[0],
-      lifestylePreferences: JSON.stringify(pickMany(LIFESTYLE_TAGS, 4)),
+      lifestylePreferences: JSON.stringify(lifestyleObj),
       bio: pick(BIOS),
       profileImage: `https://images.unsplash.com/photo-${imageIds[i % imageIds.length]}?auto=format&fit=crop&q=80&w=400`,
     });
