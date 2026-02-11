@@ -1,0 +1,13 @@
+Complete the full authentication system. The Sign In button in the navbar must link to a fully functional Sign In / Sign Up page. If a user is not logged in, the navbar should display Sign In and Register buttons. If the user is logged in, it should display a profile icon with a logout option. The registration form must include name, email, and password fields. When a new user registers, generate a unique UUID for that user and store it in the database along with their information. Ensure email uniqueness validation. On login, validate email and password, create an authenticated session (JWT or session-based authentication), and redirect the user to the homepage.
+
+Enhance the navbar by adding a new action button labeled “Be a Roommater.” If a logged-in user clicks this button, they should be redirected to the room listing form page. If a user is not logged in, clicking the button must redirect them to the Sign In / Register page. Ensure the navbar includes Apartments, Townhome, House, Find Roommates, List a Room, Be a Roommater, and the appropriate authentication state display.
+
+Expand the listings by seeding at least 100 property listings across 10 different cities. Each listing must include a title, city, address, rent amount, move-in date, amenities, property type (Apartment, Townhome, or House), image, description, and an owner UUID reference. Cities should be diverse across major locations.
+
+Create a fully populated Find Roommates page with at least 100 different roommate profiles. Each profile must include name, age, occupation, city, budget range, move-in date, lifestyle preferences, short bio, and profile image.
+
+Complete the List a Room page. If a logged-in user clicks “List a Room,” they must be redirected directly to the room listing form. If a user is not logged in, they must be redirected to the Sign In / Sign Up page first. The List a Room form must contain all required fields to create a valid property listing, including property type, title, address, city, rent amount, deposit, availability date, amenities, description, images upload, house rules, and contact preferences.
+
+Also complete the How It Works landing page section with a clear explanation of how users can search listings, connect with roommates, and list their own rooms. Additionally, create a complete About Us page describing the mission, vision, and purpose of the platform, focusing on safe, reliable, and convenient roommate matching and room rentals.
+
+All of these updates are Phase 2 enhancements built on top of the already completed initial version of the project.
